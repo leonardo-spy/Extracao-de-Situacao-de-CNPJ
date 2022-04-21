@@ -20,6 +20,10 @@ python -m pip install -U pip setuptools
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
+- Configure o main.py substituindo o key_guru para a sua chave do [Guru](https://captcha.guru/en/)
+```
+key_guru = "xxxxxxxxxxxxxxxxxxxxxxx"
+```
 Para alimentar a aplicação com documentos basta colocar um arquivo em formato Excel (.xlsx) na pasta **Planilhas** (a pasta é criada automaticamente ao executar a aplicação), nesse arquivo basta preencher os documentos na Coluna 'A' como no exemplo abaixo
 ```
 00360305000104
@@ -30,10 +34,10 @@ Para alimentar a aplicação com documentos basta colocar um arquivo em formato 
 ## Endpoints
 Arquivo com os documentos inseridos preenchidos com a informação da Receita! Os arquivos gerados se encontram na pasta **Finalizado** com o mesmo nome do arquivo inicial com o cabeçalho do arquivo da seguinte maneira:
 ```
-Documento | Número de Inscrição	| Tipo de Número de Inscrição	| Data de Abertura	| Nome Empresarial	| Título do Estabelicimento (Nome Fantasia) |	Porte	Código e Descrição de Atividade Econômica Principal	| Código e Descrição das Atividades Econômicas Secundárias (1) | Código e Descrição das Atividades Econômicas Secundárias (2) |	Código e Descrição das Atividades Econômicas Secundárias (3) | Código e Descrição das Atividades Econômicas Secundárias (4) | Código e Descrição da natureza Jurídica | Logradouro | Número | Complemento | CEP |	Bairro/Distrito |	Município |	UF | E-mail | Telefone | Ente Federativo Responsável (EFR) | Situação Cadastral | Data da Situação Cadastral | Motivo de Situação Cadastral | Situação Especial |	Data da Situação Especial
+Documento | Número de Inscrição	| Tipo de Número de Inscrição	| Data de Abertura	| Nome Empresarial	| Título do Estabelecimento (Nome Fantasia) |	Porte	Código e Descrição de Atividade Econômica Principal	| Código e Descrição das Atividades Econômicas Secundárias (1) | Código e Descrição das Atividades Econômicas Secundárias (2) |	Código e Descrição das Atividades Econômicas Secundárias (3) | Código e Descrição das Atividades Econômicas Secundárias (4) | Código e Descrição da natureza Jurídica | Logradouro | Número | Complemento | CEP |	Bairro/Distrito |	Município |	UF | E-mail | Telefone | Ente Federativo Responsável (EFR) | Situação Cadastral | Data da Situação Cadastral | Motivo de Situação Cadastral | Situação Especial |	Data da Situação Especial
 ```
 ![image](https://user-images.githubusercontent.com/19514153/164363366-b0051788-8251-4d24-835e-8a875bbe18bd.png)
 <br>
-**No Console irar imprimir a situação do processo da execuçao da aplicacao!**
+**No Console irar imprimir a situação do processo da execução da aplicação!**
 <br>
 ![excel2](https://user-images.githubusercontent.com/19514153/164363942-a34b7e0c-bb79-447c-bfcb-06fd23953ce6.png)

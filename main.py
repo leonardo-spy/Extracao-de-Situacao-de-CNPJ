@@ -6,9 +6,13 @@ from threading import Lock, Thread
 from time import sleep,time
 import os
 import sys
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-''' tipo de captcha 0 = Google, 1 = hCaptcha'''
-tipo_cap = 1
+
+
+''' tipo de captcha 0 = Google, 1 = hCaptcha, 2 = IMG captcha'''
+tipo_cap = 2
 
 ''' Chave de autentificação da API do Guru '''
 key_guru = ""
@@ -47,7 +51,7 @@ def consulta_direto():
                     documentos_excel = documentos_excel.rename(columns={0:'documento'})
                     planilha_dados = planilha_dados.rename(columns={0:'documento'})
                     planilha_novo_dados = documentos_excel[['documento']].merge(planilha_dados[['documento',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]],on = 'documento', how = "left")
-                    planilha_novo_dados.to_excel("./finalizado/"+arquivo,index = False,header =["Documento","Número de Inscrição","Tipo de Número de Inscrição","Data de Abertura","Nome Empresarial","Título do Estabelicimento (Nome Fantasia)","Porte","Código e Descrição de Atividade Econômica Principal","Código e Descrição das Atividades Econômicas Secundárias (1)","Código e Descrição das Atividades Econômicas Secundárias (2)","Código e Descrição das Atividades Econômicas Secundárias (3)","Código e Descrição das Atividades Econômicas Secundárias (4)","Código e Descrição da natureza Jurídica","Logradouro","Número","Complemento","CEP","Bairro/Distrito","Município","UF","E-mail","Telefone","Ente Federativo Responsável (EFR)","Situação Cadastral","Data da Situação Cadastral","Motivo de Situação Cadastral","Situação Especial","Data da Situação Especial"])
+                    planilha_novo_dados.to_excel("./finalizado/"+arquivo,index = False,header =["Documento","Número de Inscrição","Tipo de Número de Inscrição","Data de Abertura","Nome Empresarial","Título do Estabelecimento (Nome Fantasia)","Porte","Código e Descrição de Atividade Econômica Principal","Código e Descrição das Atividades Econômicas Secundárias (1)","Código e Descrição das Atividades Econômicas Secundárias (2)","Código e Descrição das Atividades Econômicas Secundárias (3)","Código e Descrição das Atividades Econômicas Secundárias (4)","Código e Descrição da natureza Jurídica","Logradouro","Número","Complemento","CEP","Bairro/Distrito","Município","UF","E-mail","Telefone","Ente Federativo Responsável (EFR)","Situação Cadastral","Data da Situação Cadastral","Motivo de Situação Cadastral","Situação Especial","Data da Situação Especial"])
                     os.remove("./planilhas/"+arquivo)
                     print(f"Todos os {str(len(documentos_para_processar))} documento(s) do arquivo {arquivo} foram processado!")
                 else:
@@ -88,22 +92,24 @@ def gerenciar_macros(documentos=[],completo=False):
     return documentos_dados
 
 def gerenciar_documento(key,documento,completo):
+    id_captcha = None
     if tipo_cap == 0:
         id_guru = guru.aquisicao("&method=userrecaptcha&googlekey=6LcT2zQUAAAAABRp8qIQR2R0Y2LWYTafR0A8WFbr&pageurl=",receita.url_receita)
     elif tipo_cap == 1:
         id_guru = guru.aquisicao("&method=hcaptcha&sitekey=af4fc5a3-1ac5-4e6d-819d-324d412a5e9d&pageurl=",receita.url_receita)
-    id_captcha = guru.verificao(id_guru) 
+    if tipo_cap != 2:
+        id_captcha = guru.verificao(id_guru) 
 
-    if id_captcha != None:
+    if id_captcha != None or tipo_cap == 2:
         dados = receita.gerenciamento_receita(documento,id_captcha,completo)
     with Lock():
         global documentos_list
-        if id_captcha != None and dados != None:
+        if (id_captcha != None or tipo_cap == 2) and dados != None:
             documentos_list[key][0] = ""
             global documentos_dados
             documentos_dados.append(dados)
             atualizar_contagem()
-        elif  dados != None:            
+        else:            
             documentos_list[key][2]+= 1
             if documentos_list[key][2] == tentativa_maxima:
                 if completo == True:

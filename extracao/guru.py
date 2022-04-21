@@ -49,3 +49,24 @@ def verificao(id_guru):
                             break
                 sleep(3)
     return id_captcha
+
+def resolveCaptchaImg(img_bytes):
+    #img_bytes = img_bytes.decode()
+    files = {'file': img_bytes}
+    data = {'key': key_guru, 'method': 'post'}
+    r = requests.post('http://api.captcha.guru/in.php', files=files, data=data)
+    if r.ok and r.text.find('OK') > -1:
+        reqid = r.text[r.text.find('|')+1:]
+        for timeout in range(40):
+            r = requests.get('http://api.captcha.guru/res.php?key='+key_guru+'&action=get&id='+reqid)
+            if r.text.find('CAPCHA_NOT_READY') > -1:
+                sleep(3)
+            if r.text.find('ERROR') > -1:
+                return [False,r.text]
+            if r.text.find('OK') > -1:
+                txt_captcha = r.text[r.text.find('|')+1:]
+                if len(txt_captcha) == 6:
+                    return [True,txt_captcha]
+                else:
+                    return [False,'Captcha não completo: '+txt_captcha]
+    return [False,'']

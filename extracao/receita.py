@@ -1,16 +1,40 @@
 import requests
 from bs4 import BeautifulSoup
+import extracao.guru as guru
 
 '''
 Variaveis Globais do Guru
 '''
+
 headers_receita = {
     "Content-Type": "application/x-www-form-urlencoded",
     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36 Edg/91.0.864.59",
-    "content-length":None
 }
-url_receita = "http://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp"
-url_receita_valida = "http://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/valida_recaptcha.asp"
+# headers_receita = {
+#     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+#     "accept-language": "pt-BR,pt;q=0.9",
+#     "cache-control": "max-age=0",
+#     "content-type": "application/x-www-form-urlencoded",
+#     "upgrade-insecure-requests": "1"
+#   }
+# params_receita = {
+#   "headers": {
+#     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+#     "accept-language": "pt-BR,pt;q=0.9",
+#     "cache-control": "max-age=0",
+#     "content-type": "application/x-www-form-urlencoded",
+#     "upgrade-insecure-requests": "1"
+#   },
+#   "referrer": "http://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp",
+#   "referrerPolicy": "strict-origin-when-cross-origin",
+#   "method": "POST",
+#   "mode": "cors",
+#   "credentials": "include"
+# }
+url_receita = "https://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp"
+url_receita_img = "http://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao_CS.asp"
+url_receita_valida = "https://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/valida_recaptcha.asp"
+url_receita_valida_img = "http://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/valida.asp"
 
 '''
 Metodos do Guru
@@ -21,10 +45,21 @@ Acessar Receita e Validação na Receita
 Funcao Que acessa a pagina da Receita para a captura do cookie
 '''
 def acessar_receita(s):
+    from main import tipo_cap
+
     cookies_receita = None
     try:
-        with s.get(url = url_receita, headers=headers_receita,verify=False,timeout=30) as r:
-            cookies_receita = r.cookies
+        if tipo_cap == 2:
+            with s.get(url = url_receita_img, headers=headers_receita,verify=False,timeout=30) as r:
+                cookies_receita = r.cookies
+                soup = BeautifulSoup(r.text, 'lxml')
+                img_captcha = soup.find("img", {'id': 'imgCaptcha'})  
+                with s.get(url = 'http://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/'+ img_captcha['src'], headers=headers_receita,verify=False,timeout=30) as r_img:
+                    text_captcha = guru.resolveCaptchaImg(r_img.content)
+                    return [cookies_receita,text_captcha]
+        else:
+            with s.get(url = url_receita, headers=headers_receita,verify=False,timeout=30) as r:
+                cookies_receita = r.cookies
     except Exception as e:
         print("Erro ao Acessa a Receita! Erro: "+str(e))
     return cookies_receita
@@ -34,19 +69,29 @@ Funcao Que acessa a pagina de validação da Receita para prosseguir com a requi
 '''
 def validacao_receita(s,cookies_receita,documento,id_captcha,completo):
     from main import tipo_cap
+
     resultado = None
-    #cnpj = str(str(documento).split('.')[0])
-    #if len(cnpj) < 14:
-        #cnpj = cnpj.zfill(14)
-    #cnpj = '{}.{}.{}/{}-{}'.format(cnpj[:2], cnpj[2:5], cnpj[5:8], cnpj[8:12],cnpj[12:])
-    cnpj = documento
+    cnpj = str(str(documento).split('.')[0])
+    if len(cnpj) < 14:
+        cnpj = cnpj.zfill(14)
+    cnpj = '{}.{}.{}/{}-{}'.format(cnpj[:2], cnpj[2:5], cnpj[5:8], cnpj[8:12],cnpj[12:])
+    #cnpj = documento
     if tipo_cap==0:
+        url_dados = url_receita_valida
         myobj = {'origem':'comprovante','cnpj': cnpj,'g-recaptcha-response':id_captcha,'search_type':'cnpj'}
     elif tipo_cap==1:
+        url_dados = url_receita_valida
         myobj = {'origem':'comprovante','cnpj': cnpj,'h-captcha-response':id_captcha,'search_type':'cnpj'}
+    elif tipo_cap==2:
+        if cookies_receita[1][0] == False:
+            print('Erro ao consultar iamgem no Goru:' + cookies_receita[1][1])
+            return resultado
+        url_dados = url_receita_valida_img
+        myobj = {'origem':'comprovante','cnpj': cnpj,'txtTexto_captcha_serpro_gov_br':cookies_receita[1][1],'search_type':'cnpj'}
+        cookies_receita = cookies_receita[0]
     #TODO: Fazer uma funcao para substitui os codigos abaixo
     try:
-        with s.post(url = url_receita_valida,data = myobj, headers=headers_receita,verify=False,allow_redirects=True,cookies=cookies_receita,timeout=30) as r:
+        with s.post(url = url_dados,data = myobj ,headers=headers_receita,verify=False,allow_redirects=True,cookies=cookies_receita,timeout=30) as r:
             soup = BeautifulSoup(r.text, 'lxml')
             div_principal = soup.find("div", {'id': 'principal'})
             if completo == True:
