@@ -31,7 +31,7 @@ Para alimentar a aplicação com documentos basta colocar um arquivo em formato 
 ```
 ![excel1](https://user-images.githubusercontent.com/19514153/164362213-cfa90056-6b11-4164-a9b7-805e549c37b3.png)
 
-## Endpoints
+## Resultados & O que é esperado
 Arquivo com os documentos inseridos preenchidos com a informação da Receita! Os arquivos gerados se encontram na pasta **Finalizado** com o mesmo nome do arquivo inicial com o cabeçalho do arquivo da seguinte maneira:
 ```
 Documento | Número de Inscrição	| Tipo de Número de Inscrição	| Data de Abertura	| Nome Empresarial	| Título do Estabelecimento (Nome Fantasia) |	Porte	Código e Descrição de Atividade Econômica Principal	| Código e Descrição das Atividades Econômicas Secundárias (1) | Código e Descrição das Atividades Econômicas Secundárias (2) |	Código e Descrição das Atividades Econômicas Secundárias (3) | Código e Descrição das Atividades Econômicas Secundárias (4) | Código e Descrição da natureza Jurídica | Logradouro | Número | Complemento | CEP |	Bairro/Distrito |	Município |	UF | E-mail | Telefone | Ente Federativo Responsável (EFR) | Situação Cadastral | Data da Situação Cadastral | Motivo de Situação Cadastral | Situação Especial |	Data da Situação Especial
